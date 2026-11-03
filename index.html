@@ -187,6 +187,7 @@
   .garden .ground{position:absolute;left:-2%;right:-2%;bottom:10px;width:104%;height:14px;color:var(--paper);opacity:.7}
   .gf{position:absolute;bottom:16px;color:var(--paper);transform-origin:50% 100%;animation:grow .9s cubic-bezier(.2,1.4,.4,1) both;pointer-events:none}
   .gf svg{width:100%;height:100%;display:block;overflow:visible;transform-origin:50% 100%;animation:sway 4.5s ease-in-out infinite;animation-delay:var(--d,0s)}
+  .gf.still svg{animation:none}
   @keyframes grow{from{transform:translateX(-50%) scale(0) rotate(var(--r,0deg))}to{transform:translateX(-50%) scale(1) rotate(var(--r,0deg))}}
   .ghint{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;font-size:24px;color:var(--paper);pointer-events:none;animation:hint 1.8s ease-in-out infinite;transition:opacity .4s}
   .ghint svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -575,14 +576,23 @@ const SEED = [
 let planted = [];
 try { planted = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
 let pick = 'daisy', live = false, total = 0, lastBloom = 0, bloomsThisVisit = 0;
-function grow(p, delay = 0){
-  const [w, h] = SIZE[p.f], el = document.createElement('span');
+// three rows for depth: front is full size, the back rows sit higher, smaller and fainter,
+// so a crowded garden looks lush instead of a white wall. Fresh blooms always go in front.
+const ROWS = [{ k: 1, b: 16, o: 1 }, { k: .78, b: 30, o: .7 }, { k: .6, b: 42, o: .45 }];
+const SWAY = 25, swaying = [];
+function grow(p, delay = 0, row = 0){
+  const [w, h] = SIZE[p.f], R = ROWS[row], ht = Math.round(p.h * R.k), el = document.createElement('span');
   el.className = 'gf';
-  el.style.cssText = `left:${p.x}%;height:${p.h}px;width:${p.h * w / h}px;--r:${p.r}deg;--d:${-Math.random()*4}s;animation-delay:${delay}s`;
+  el.style.cssText = `left:${p.x}%;height:${ht}px;width:${ht * w / h}px;bottom:${R.b}px;opacity:${R.o};z-index:${3 - row};--r:${p.r}deg;--d:${-Math.random()*4}s;animation-delay:${delay}s`;
   el.innerHTML = `<svg><use href="#${p.f}"/></svg>`;
   garden.appendChild(el);
+  // only the newest few sway, so phones stay smooth however full the garden gets
+  swaying.push(el);
+  if (swaying.length > SWAY) swaying.shift().classList.add('still');
   return el;
 }
+// a steady pseudo-random row per flower, so the garden looks the same on every visit
+const rowOf = p => Math.round(p.x * 7 + p.h * 3) % 3;
 function count(){
   const n = planted.length, s = k => k === 1 ? '' : 's';
   $('#gcount').innerHTML = live
@@ -606,7 +616,7 @@ const gio = new IntersectionObserver(async ([en]) => {
   if (!en.isIntersecting) return;
   gio.disconnect();
   const shared = await connectGarden();
-  [...SEED, ...(shared || planted)].forEach((p, i) => grow(p, Math.min(i, 20) * .08));
+  [...SEED, ...(shared || planted)].forEach((p, i) => grow(p, Math.min(i, 20) * .08, i < SEED.length ? 0 : rowOf(p)));
   count();
 }, { threshold: .3 });
 gio.observe(garden);
