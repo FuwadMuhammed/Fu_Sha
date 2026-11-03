@@ -70,6 +70,8 @@
   .ph::after{content:attr(data-label);font-family:var(--pen);font-size:22px;color:#6f6f6b;padding:42px 10px 0;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236f6f6b' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8h3l2-3h6l2 3h3v11H4z'/%3E%3Ccircle cx='12' cy='13' r='3.5'/%3E%3C/svg%3E") 50% 0/36px no-repeat}
   .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;filter:grayscale(1) contrast(1.05)}
+  .fam .pic img{transition:filter .6s ease}
+  .fam .pic:hover img,.fam .pic.color img{filter:none}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:150px;padding:9px 22px 7px;border:2px solid var(--blue);border-radius:var(--hand-r);
     background:transparent;color:var(--blue);font:24px var(--marker);text-decoration:none;cursor:pointer;transition:background .2s,color .2s,transform .15s}
@@ -466,13 +468,13 @@
 <script>
 /* ───── edit these numbers before sharing ───── */
 const CONTACTS = [
-  { name: 'Aysha Shaba',        note: 'The bride',      phone: '+910000000000' },
-  { name: 'Muhammed Fuwad',     note: 'The groom',      phone: '+910000000000' },
+  { name: 'Aysha Shaba',        note: 'The bride',      phone: '+919744033223' },
+  { name: 'Muhammed Fuwad',     note: 'The groom',      phone: '+919746965275' },
 ];
 
 /* ───── shared garden + RSVP sheet: paste keys here (empty = local-only, still works) ───── */
 const FIREBASE = null;   // e.g. { apiKey: '…', authDomain: '…', projectId: '…', appId: '…' }
-const SHEET_URL = '';    // Google Apps Script web-app URL from rsvp.gs
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwPLbBEPqW_-vhal8GcSVGiUc2DizjGb7f7ffC-DNbpNe7MGOg5r5ITA6ADLvBRBd6w/exec';    // Google Apps Script web-app URL from rsvp.gs
 
 const START = new Date('2027-01-31T11:00:00+05:30');
 const END   = new Date('2027-01-31T15:00:00+05:30');
@@ -528,7 +530,7 @@ if (matchMedia('(pointer: fine)').matches && !reduced){
   document.addEventListener('mouseover', e => {
     blue = onBlue(e.target);
     const garden = !!e.target.closest('.garden');
-    ring.classList.toggle('hover', !garden && !!e.target.closest('a,button,select,label,.chip'));
+    ring.classList.toggle('hover', !garden && !!e.target.closest('a,button,select,label,.chip,.pic'));
     ring.classList.toggle('plant', garden);
     [cur, ring].forEach(el => el.classList.toggle('blue', blue));
     cur.classList.toggle('hide', garden);
@@ -667,6 +669,9 @@ $('#ics').addEventListener('click', () => {
 
 /* ───── wishes ───── */
 const digits = p => p.replace(/\D/g, '');
+// touch screens have no hover: tap a family photo to bring its colour in
+document.querySelectorAll('.fam .pic').forEach(p => p.addEventListener('click', () => p.classList.toggle('color')));
+
 $('#wTo').innerHTML = CONTACTS.map((c, i) => `<option value="${i}">${c.name} (${c.note})</option>`).join('');
 document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => {
   const m = $('#wMsg'), t = ch.textContent;
