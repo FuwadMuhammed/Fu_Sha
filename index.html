@@ -216,6 +216,15 @@
   .cur.hide,.ring.hide{opacity:0}
   .trail{width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:currentColor;opacity:.4;animation:trail .7s ease-out forwards}
   @keyframes trail{to{transform:scale(.2);opacity:0}}
+  /* gloss: hover (or tap) an Arabic or Islamic word to see what it means */
+  .gl{position:relative;text-decoration:underline dotted 1.5px;text-underline-offset:.18em;cursor:help}
+  .gl.plain{text-decoration:none}
+  .gl::after{content:attr(data-m);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(calc(-50% + var(--dx,0px)),4px);width:max-content;max-width:min(240px,80vw);
+    padding:6px 12px 4px;border-radius:10px;background:var(--blue);color:var(--paper);font:19px/1.2 var(--pen);letter-spacing:0;text-align:center;text-shadow:none;
+    direction:ltr;white-space:normal;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40}
+  .gl.below::after{bottom:auto;top:calc(100% + 8px)}
+  .gl:hover::after,.gl:focus-visible::after,.gl.tip::after{opacity:1;transform:translate(calc(-50% + var(--dx,0px)),0)}
+  .foot .gl::after{background:var(--paper);color:var(--blue)}
   .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);background:var(--blue);color:var(--paper);padding:8px 20px;font-size:22px;z-index:70;
     border-radius:var(--hand-r);opacity:0;transition:.3s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
   .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -297,7 +306,7 @@
 
   <!-- ───────── hero ───────── -->
   <header class="hero">
-    <div class="bism">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+    <div class="bism gl plain below" tabindex="0" data-m="Bismillah: In the name of God, the Most Gracious, the Most Merciful">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
     <div class="hero-art">
     <h1 class="title mk"><span class="a">Shaba</span><span class="b">&amp; Fuwad</span></h1>
 
@@ -328,7 +337,7 @@
     <span class="dd sway b" style="right:6%;top:10px;width:30px;height:70px;--r:12deg"><svg><use href="#sprig"/></svg></span>
     <p class="q">who's getting married? <svg viewBox="0 0 40 40"><path d="M6 6c18 0 28 10 26 26M24 26l8 8 6-10"/></svg></p>
     <h2>Yes, it's us!</h2>
-    <p class="lead">With the blessings of Allah and the duas of our families, we invite you and your family to share the day we become one.</p>
+    <p class="lead">With the blessings of <span class="gl" tabindex="0" data-m="Allah: the Arabic word for God">Allah</span> and the <span class="gl" tabindex="0" data-m="duas: heartfelt prayers">duas</span> of our families, we invite you and your family to share the day we become one.</p>
     <div class="fam">
       <div>
         <div class="pic"><div class="ph p1" data-label="Shaba"><img src="assets/photos/us-1.jpg" alt="Aysha Shaba" onerror="this.remove()"></div>
@@ -405,7 +414,7 @@
       <div><b data-u="m">0</b><span>mins</span></div>
       <div><b data-u="s">0</b><span>secs</span></div>
     </div>
-    <p class="lead" id="countNote">until we say qubool</p>
+    <p class="lead" id="countNote">until we say <span class="gl" tabindex="0" data-m="qubool: &quot;I accept&quot;, the words said at the nikah (Islamic marriage contract)">qubool</span></p>
   </section>
 
   <!-- ───────── wishes ───────── -->
@@ -413,20 +422,20 @@
     <span class="dd sway" style="left:6%;top:30px;width:40px;height:64px;--r:-12deg"><svg><use href="#daisy"/></svg></span>
     <span class="dd sway b" style="right:7%;top:34px;width:30px;height:64px;--r:10deg"><svg><use href="#tulip"/></svg></span>
     <p class="q">will you join us? <svg viewBox="0 0 40 40"><path d="M6 6c18 0 28 10 26 26M24 26l8 8 6-10"/></svg></p>
-    <h2>Send us a dua</h2>
+    <h2>Send us a <span class="gl" tabindex="0" data-m="dua: a heartfelt prayer">dua</span></h2>
     <form class="wish" id="wishForm">
       <label for="wName">your name</label>
       <input id="wName" required placeholder="e.g. Ameen & family">
       <label for="wCount">will you be joining?</label>
       <select id="wCount">
-        <option>Yes, in sha Allah!</option>
+        <option title="in sha Allah: God willing">Yes, in sha Allah!</option>
         <option>Yes, with family</option>
-        <option>Sorry, can't make it, sending duas</option>
+        <option title="duas: heartfelt prayers">Sorry, can't make it, sending duas</option>
       </select>
       <label for="wMsg">your message</label>
       <div class="chips">
-        <button type="button" class="chip">Barakallahu lakuma</button>
-        <button type="button" class="chip">Mabrook!</button>
+        <button type="button" class="chip gl" data-m="Barakallahu lakuma: may God bless you both">Barakallahu lakuma</button>
+        <button type="button" class="chip gl" data-m="Mabrook: congratulations!">Mabrook!</button>
         <button type="button" class="chip">So happy for you both!</button>
       </div>
       <textarea id="wMsg" placeholder="write a dua or wish…"></textarea>
@@ -442,14 +451,14 @@
 <footer class="foot">
     <span class="dd twinkle" style="left:10%;top:30px;width:30px;height:30px"><svg><use href="#spark"/></svg></span>
     <span class="dd twinkle b" style="right:10%;top:44px;width:26px;height:26px"><svg><use href="#star"/></svg></span>
-    <p class="dua">بَارَكَ ٱللَّهُ لَكُمَا وَبَارَكَ عَلَيْكُمَا وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ</p>
+    <p class="dua"><span class="gl plain" tabindex="0" data-m="A dua the Prophet ﷺ made for newlyweds (meaning just below)">بَارَكَ ٱللَّهُ لَكُمَا وَبَارَكَ عَلَيْكُمَا وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ</span></p>
     <p class="tr">“May Allah bless you both, shower His blessings upon you, and unite you in goodness.”</p>
     <div class="mk">Shaba &amp; Fuwad</div>
     <div class="dt">31 · 01 · 2027</div>
 
     <div class="gd-head">
       <h3>Help our love bloom</h3>
-      <p>every flower carries your dua for us</p>
+      <p>every flower carries your <span class="gl" tabindex="0" data-m="dua: a heartfelt prayer">dua</span> for us</p>
       <div class="picker" role="radiogroup" aria-label="Choose a flower">
         <button class="pick on" data-f="daisy" role="radio" aria-checked="true" aria-label="Daisy"><svg><use href="#daisy"/></svg></button>
         <button class="pick" data-f="tulip" role="radio" aria-checked="false" aria-label="Tulip"><svg><use href="#tulip"/></svg></button>
@@ -530,7 +539,7 @@ if (matchMedia('(pointer: fine)').matches && !reduced){
   document.addEventListener('mouseover', e => {
     blue = onBlue(e.target);
     const garden = !!e.target.closest('.garden');
-    ring.classList.toggle('hover', !garden && !!e.target.closest('a,button,select,label,.chip,.pic'));
+    ring.classList.toggle('hover', !garden && !!e.target.closest('a,button,select,label,.chip,.pic,.gl'));
     ring.classList.toggle('plant', garden);
     [cur, ring].forEach(el => el.classList.toggle('blue', blue));
     cur.classList.toggle('hide', garden);
@@ -577,9 +586,9 @@ function grow(p, delay = 0){
 }
 function count(){
   const n = planted.length, s = k => k === 1 ? '' : 's';
-  $('#gcount').textContent = db
-    ? `${total} flower${s(total)} blooming for Shaba & Fuwad${n ? ` · ${n} from you, jazakAllah khair` : ''}`
-    : n ? `${n} flower${s(n)} blooming from you, jazakAllah khair` : 'pick a flower and tap the ground to make it bloom';
+  $('#gcount').innerHTML = db
+    ? `${total} flower${s(total)} blooming for Shaba & Fuwad${n ? ` · ${n} from you, <span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>` : ''}`
+    : n ? `${n} flower${s(n)} blooming from you, <span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>` : 'pick a flower and tap the ground to make it bloom';
   $('#ghint').classList.toggle('off', n > 0);
 }
 async function connectGarden(){
@@ -612,7 +621,7 @@ document.querySelectorAll('.pick').forEach(b => b.addEventListener('click', () =
 }));
 garden.addEventListener('click', e => {
   const now = Date.now();
-  if (bloomsThisVisit >= 30) return toast('So many duas, jazakAllah khair 🌼');
+  if (bloomsThisVisit >= 30) return toast('So many duas, thank you 🌼');
   if (now - lastBloom < 1500) return toast('Let that bloom first, one at a time 🌼');
   lastBloom = now; bloomsThisVisit++;
   const r = garden.getBoundingClientRect();
@@ -639,7 +648,7 @@ function tick(){
   let left = START - Date.now();
   if (left <= 0){
     $('#count').style.display = 'none';
-    $('#countNote').textContent = Date.now() < END ? 'It\'s happening right now!' : 'Alhamdulillah, thank you for celebrating with us';
+    $('#countNote').innerHTML = Date.now() < END ? 'It\'s happening right now!' : '<span class="gl" tabindex="0" data-m="Alhamdulillah: all praise and thanks be to God">Alhamdulillah</span>, thank you for celebrating with us';
     return;
   }
   for (const [k, ms] of Object.entries(units)){
@@ -670,6 +679,19 @@ $('#ics').addEventListener('click', () => {
 
 /* ───── wishes ───── */
 const digits = p => p.replace(/\D/g, '');
+// touch screens have no hover: tap a word to see its meaning, tap anywhere else to hide it
+// nudge a meaning sideways so it never runs off the edge of the screen
+const nudge = g => {
+  const r = g.getBoundingClientRect(), half = Math.min(120, innerWidth * .4), mid = r.left + r.width / 2;
+  g.style.setProperty('--dx', Math.max(12 + half - mid, Math.min(0, innerWidth - 12 - half - mid)) + 'px');
+};
+['pointerover', 'focusin'].forEach(t => document.addEventListener(t, e => { const g = e.target.closest?.('.gl'); g && nudge(g); }));
+document.addEventListener('click', e => {
+  const g = e.target.closest('.gl:not(.chip)');
+  document.querySelectorAll('.gl.tip').forEach(o => o !== g && o.classList.remove('tip'));
+  if (g && !matchMedia('(hover: hover)').matches) g.classList.toggle('tip');
+});
+
 // touch screens have no hover: tap a family photo to bring its colour in
 document.querySelectorAll('.fam .pic').forEach(p => p.addEventListener('click', () => p.classList.toggle('color')));
 
