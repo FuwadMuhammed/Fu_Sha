@@ -482,8 +482,8 @@ const CONTACTS = [
 ];
 
 /* ───── shared garden + RSVP sheet: paste keys here (empty = local-only, still works) ───── */
-const FIREBASE = null;   // e.g. { apiKey: '…', authDomain: '…', projectId: '…', appId: '…' }
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwPLbBEPqW_-vhal8GcSVGiUc2DizjGb7f7ffC-DNbpNe7MGOg5r5ITA6ADLvBRBd6w/exec';    // Google Apps Script web-app URL from rsvp.gs
+const SUPABASE = null;   // e.g. { url: 'https://xxxx.supabase.co', key: 'publishable (anon) key' }
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbyXxyK4sLR2E_PoJQ7l5maN88L0DAYlbP9JxV4Ot1NgcfDYt2szneQPs3Ib_x-6quDJ/exec';    // Google Apps Script web-app URL from rsvp.gs
 
 const START = new Date('2027-01-31T11:00:00+05:30');
 const END   = new Date('2027-01-31T15:00:00+05:30');
@@ -566,7 +566,7 @@ addEventListener('scroll', () => { if (!footTick){ footTick = true; requestAnima
 addEventListener('resize', footProgress);
 footProgress();
 
-/* ───── digital garden: shared via Firestore when FIREBASE is set, otherwise this browser only ───── */
+/* ───── digital garden: shared via Supabase when SUPABASE is set, otherwise this browser only ───── */
 const garden = $('#garden'), KEY = 'sf-garden', MAX = 80;
 const SIZE = { daisy: [40, 64], tulip: [30, 64], sprig: [30, 70] };
 const SEED = [
@@ -575,7 +575,7 @@ const SEED = [
 ];
 let planted = [];
 try { planted = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
-let pick = 'daisy', db = null, fs = null, total = 0, lastBloom = 0, bloomsThisVisit = 0;
+let pick = 'daisy', live = false, total = 0, lastBloom = 0, bloomsThisVisit = 0;
 function grow(p, delay = 0){
   const [w, h] = SIZE[p.f], el = document.createElement('span');
   el.className = 'gf';
@@ -586,24 +586,22 @@ function grow(p, delay = 0){
 }
 function count(){
   const n = planted.length, s = k => k === 1 ? '' : 's';
-  $('#gcount').innerHTML = db
+  $('#gcount').innerHTML = live
     ? `${total} flower${s(total)} blooming for Shaba & Fuwad${n ? ` · ${n} from you, <span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>` : ''}`
     : n ? `${n} flower${s(n)} blooming from you, <span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>` : 'pick a flower and tap the ground to make it bloom';
   $('#ghint').classList.toggle('off', n > 0);
 }
+const sb = (q, opt = {}) => fetch(`${SUPABASE.url}/rest/v1/flowers${q}`, { ...opt, headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json', ...opt.headers } });
 async function connectGarden(){
-  if (!FIREBASE) return;
+  if (!SUPABASE) return;
   try {
-    const v = 'https://www.gstatic.com/firebasejs/10.12.2/';
-    const [app, f] = await Promise.all([import(v + 'firebase-app.js'), import(v + 'firebase-firestore.js')]);
-    const d = f.getFirestore(app.initializeApp(FIREBASE)), col = f.collection(d, 'flowers');
-    const [snap, agg] = await Promise.all([
-      f.getDocs(f.query(col, f.orderBy('t', 'desc'), f.limit(120))),
-      f.getCountFromServer(col),
-    ]);
-    fs = f; db = d; total = agg.data().count;
-    return snap.docs.map(doc => doc.data()).reverse();
-  } catch { db = null; }
+    const res = await sb('?select=f,x,h,r&order=t.desc&limit=120', { headers: { Prefer: 'count=exact' } });
+    if (!res.ok) throw 0;
+    const rows = await res.json();
+    total = +(res.headers.get('Content-Range') || '').split('/')[1] || rows.length;
+    live = true;
+    return rows.reverse();
+  } catch { live = false; }
 }
 const gio = new IntersectionObserver(async ([en]) => {
   if (!en.isIntersecting) return;
@@ -630,7 +628,7 @@ garden.addEventListener('click', e => {
   planted.push(p);
   if (planted.length > MAX) planted.shift();
   try { localStorage.setItem(KEY, JSON.stringify(planted)); } catch {}
-  if (db){ total++; fs.addDoc(fs.collection(db, 'flowers'), { ...p, t: fs.serverTimestamp() }).catch(() => {}); }
+  if (live){ total++; sb('', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(p) }).catch(() => {}); }
   count();
 });
 
