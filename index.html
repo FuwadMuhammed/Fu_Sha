@@ -612,7 +612,8 @@ document.querySelectorAll('.pick').forEach(b => b.addEventListener('click', () =
 }));
 garden.addEventListener('click', e => {
   const now = Date.now();
-  if (now - lastBloom < 1500 || bloomsThisVisit >= 30) return toast('Let that one bloom first 🌼');
+  if (bloomsThisVisit >= 30) return toast('So many duas, jazakAllah khair 🌼');
+  if (now - lastBloom < 1500) return toast('Let that bloom first, one at a time 🌼');
   lastBloom = now; bloomsThisVisit++;
   const r = garden.getBoundingClientRect();
   const p = { f: pick, x: +(((e.clientX - r.left) / r.width) * 100).toFixed(1), h: 58 + Math.round(Math.random()*50), r: Math.round(Math.random()*20 - 10) };
