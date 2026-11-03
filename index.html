@@ -481,9 +481,8 @@ const CONTACTS = [
   { name: 'Muhammed Fuwad',     note: 'The groom',      phone: '+919744033223' },
 ];
 
-/* ───── shared garden + RSVP sheet: paste keys here (empty = local-only, still works) ───── */
+/* ───── shared garden + RSVPs: paste keys here (empty = local-only, still works) ───── */
 const SUPABASE = null;   // e.g. { url: 'https://xxxx.supabase.co', key: 'publishable (anon) key' }
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbyXxyK4sLR2E_PoJQ7l5maN88L0DAYlbP9JxV4Ot1NgcfDYt2szneQPs3Ib_x-6quDJ/exec';    // Google Apps Script web-app URL from rsvp.gs
 
 const START = new Date('2027-01-31T11:00:00+05:30');
 const END   = new Date('2027-01-31T15:00:00+05:30');
@@ -591,11 +590,11 @@ function count(){
     : n ? `${n} flower${s(n)} blooming from you, <span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>` : 'pick a flower and tap the ground to make it bloom';
   $('#ghint').classList.toggle('off', n > 0);
 }
-const sb = (q, opt = {}) => fetch(`${SUPABASE.url}/rest/v1/flowers${q}`, { ...opt, headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json', ...opt.headers } });
+const sb = (q, opt = {}) => fetch(`${SUPABASE.url}/rest/v1/${q}`, { ...opt, headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json', ...opt.headers } });
 async function connectGarden(){
   if (!SUPABASE) return;
   try {
-    const res = await sb('?select=f,x,h,r&order=t.desc&limit=120', { headers: { Prefer: 'count=exact' } });
+    const res = await sb('flowers?select=f,x,h,r&order=t.desc&limit=120', { headers: { Prefer: 'count=exact' } });
     if (!res.ok) throw 0;
     const rows = await res.json();
     total = +(res.headers.get('Content-Range') || '').split('/')[1] || rows.length;
@@ -628,7 +627,7 @@ garden.addEventListener('click', e => {
   planted.push(p);
   if (planted.length > MAX) planted.shift();
   try { localStorage.setItem(KEY, JSON.stringify(planted)); } catch {}
-  if (live){ total++; sb('', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(p) }).catch(() => {}); }
+  if (live){ total++; sb('flowers', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(p) }).catch(() => {}); }
   count();
 });
 
@@ -705,8 +704,8 @@ $('#wishForm').addEventListener('submit', e => {
   e.preventDefault();
   const c = CONTACTS[$('#wTo').value];
   const text = `Assalamu alaikum!\n${$('#wMsg').value.trim() || 'Barakallahu lakuma!'}\n\nRSVP: ${$('#wCount').value}\n— ${$('#wName').value.trim()}`;
-  if (SHEET_URL) fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({
-    name: $('#wName').value.trim(), joining: $('#wCount').value, message: $('#wMsg').value.trim(), to: c.name,
+  if (SUPABASE) sb('rsvps', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({
+    name: $('#wName').value.trim(), joining: $('#wCount').value, message: $('#wMsg').value.trim(), sent_to: c.name,
   }) }).catch(() => {});
   const r = e.submitter.getBoundingClientRect();
   ink(r.left + r.width/2, r.top + r.height/2);
