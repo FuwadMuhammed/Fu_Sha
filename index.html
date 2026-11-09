@@ -234,6 +234,7 @@
   .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);background:var(--blue);color:var(--paper);padding:8px 20px;font-size:22px;z-index:70;
     border-radius:var(--hand-r);opacity:0;transition:.3s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
   .toast.on{opacity:1;transform:translate(-50%,0)}
+  .toast.alt{background:var(--paper);color:var(--blue);box-shadow:0 8px 24px rgba(10,25,80,.35)}
 
   /* ───────── desktop ───────── */
   @media (min-width:900px){
@@ -497,7 +498,10 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = s => document.querySelector(s);
 
 function toast(msg){
-  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  const t = $('#toast'); t.textContent = msg;
+  // over the blue footer, flip to a light pill so it doesn't blend into the background
+  t.classList.toggle('alt', document.querySelector('.foot').getBoundingClientRect().top < innerHeight - 60);
+  t.classList.add('on');
   clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2400);
 }
 
