@@ -223,8 +223,8 @@
   .trail{width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:currentColor;opacity:.4;animation:trail .7s ease-out forwards}
   @keyframes trail{to{transform:scale(.2);opacity:0}}
   /* gloss: hover (or tap) an Arabic or Islamic word to see what it means */
-  .gl{position:relative;text-decoration:underline dotted 1.5px;text-underline-offset:.18em;cursor:help}
-  .gl.plain{text-decoration:none}
+  .gl{position:relative;white-space:nowrap;text-decoration:underline dotted 1.5px;text-underline-offset:.18em;cursor:help}
+  .gl.plain{text-decoration:none;white-space:normal}
   .gl::after{content:attr(data-m);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(calc(-50% + var(--dx,0px)),4px);width:max-content;max-width:min(240px,80vw);
     padding:6px 12px 4px;border-radius:10px;background:var(--blue);color:var(--paper);font:19px/1.2 var(--pen);letter-spacing:0;text-align:center;text-shadow:none;
     direction:ltr;white-space:normal;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40}
@@ -621,7 +621,7 @@ function count(){
   const thanks = '<span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>';
   const mine = n === KINDS.length ? `all three of yours are blooming, ${thanks}` : n ? `${n} of 3 from you, ${thanks}` : '';
   $('#gcount').innerHTML = live
-    ? `${total} flower${s(total)} blooming for Shaba & Fuwad${mine ? ' · ' + mine : ''}`
+    ? `${total + SEED.length} flowers blooming for Shaba & Fuwad${mine ? '<br>' + mine : ''}`
     : mine || 'pick a flower and tap the ground, you can plant one of each';
   $('#ghint').classList.toggle('off', n > 0);
 }
