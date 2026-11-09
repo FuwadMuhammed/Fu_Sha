@@ -1,6 +1,7 @@
 -- Shared garden + RSVPs for the wedding site.
 -- Paste into Supabase → SQL Editor → New query, then Run.
 -- Anyone can read the garden and add a well-formed flower; nobody can edit or delete.
+-- Each browser (who) can plant one of each flower, so three at most.
 
 create table if not exists public.flowers (
   id bigint generated always as identity primary key,
@@ -8,9 +9,11 @@ create table if not exists public.flowers (
   x  real        not null check (x between 0 and 100),
   h  int         not null check (h between 58 and 108),
   r  int         not null check (r between -10 and 10),
+  who uuid       not null,
   t  timestamptz not null default now()
 );
 create index if not exists flowers_t on public.flowers (t desc);
+create unique index if not exists flowers_one_each on public.flowers (who, f);
 
 alter table public.flowers enable row level security;
 
@@ -22,8 +25,9 @@ create policy "anyone can bloom" on public.flowers for insert to anon with check
 
 -- guests may only send the flower itself; the time is always set by the server
 revoke all on public.flowers from anon;
-grant select on public.flowers to anon;
-grant insert (f, x, h, r) on public.flowers to anon;
+-- "who" can be written but never read back, so nobody can see which flowers came from whom
+grant select (f, x, h, r, t) on public.flowers to anon;
+grant insert (f, x, h, r, who) on public.flowers to anon;
 
 
 -- RSVPs: guests can send one, but nobody can read them from the site.

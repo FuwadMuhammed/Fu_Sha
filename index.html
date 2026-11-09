@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shaba &amp; Fuwad · Wedding</title>
-<meta name="description" content="Aysha Shaba & Muhammed Fuwad — Sunday, 31 January 2027, 11:30 AM – 3:00 PM at Palace Auditorium, Maranchery.">
+<meta name="description" content="Aysha Shaba & Muhammed Fuwad — Sunday, 31 January 2027 · Nikah at 11:30 AM · Palace Auditorium, Maranchery.">
 <meta property="og:title" content="Shaba & Fuwad · Wedding">
 <meta property="og:description" content="Sunday, 31 January 2027 · Palace Auditorium, Maranchery">
 <meta property="og:type" content="website">
@@ -184,6 +184,10 @@
   .pick svg{width:100%;height:100%;display:block}
   .pick:hover{border-color:var(--paper)}
   .pick.on{background:var(--paper);color:var(--blue);border-color:var(--paper);transform:rotate(-4deg)}
+  .pick{position:relative}
+  .pick.done{opacity:.4;cursor:default;border-style:dashed}
+  .pick.done::after{content:"✓";position:absolute;right:-8px;top:-12px;font:22px var(--marker);color:var(--paper)}
+  .garden.full{cursor:default}
   .garden{position:relative;height:170px;margin-top:6px;cursor:copy;touch-action:manipulation}
   .garden .ground{position:absolute;left:-2%;right:-2%;bottom:10px;width:104%;height:14px;color:var(--paper);opacity:.7}
   .gf{position:absolute;bottom:16px;color:var(--paper);transform-origin:50% 100%;animation:grow .9s cubic-bezier(.2,1.4,.4,1) both;pointer-events:none}
@@ -329,7 +333,7 @@
     <p class="invite">Join us to celebrate our special day, filled with love, joy, and new beginnings.</p>
     <div class="bigdate mk">Sunday, 31st<br>January 2027</div>
     <p class="where">Palace Auditorium, Maranchery</p>
-    <p class="rsvp">11:30 AM – 3:00 PM</p>
+    <p class="rsvp"><span class="gl" tabindex="0" data-m="nikah: the Islamic marriage contract">Nikah</span> @ 11:30 AM</p>
     </div>
   </header>
 
@@ -355,7 +359,7 @@
           <span class="dd twinkle b" style="left:-12px;bottom:-10px;width:26px;height:26px;z-index:2"><svg><use href="#star"/></svg></span></div>
         <div class="role">the groom</div>
         <div class="name mk">Muhammed Fuwad</div>
-        <p>son of<br>Mohammed Gafoor. K &amp; Jasmine</p>
+        <p>son of<br>Mr. Mohammed Gafoor. K &amp; Mrs. Jasmine</p>
         <p>Madeena (H), PO Chingapuram, Nandi</p>
       </div>
     </div>
@@ -382,7 +386,7 @@
         <text x="265" y="136" text-anchor="middle" fill="currentColor" stroke="none" font-family="Nanum Pen Script" font-size="36">1</text>
       </svg>
     </div>
-    <p class="when">Sunday · 11:30 AM – 3:00 PM</p>
+    <p class="when">Sunday · Nikah @ 11:30 AM</p>
     <div class="btns">
       <a class="btn solid" id="gcal" target="_blank" rel="noopener">Google Calendar</a>
       <button class="btn" id="ics">Apple / Outlook</button>
@@ -459,7 +463,7 @@
 
     <div class="gd-head">
       <h3>Help our love bloom</h3>
-      <p>every flower carries your <span class="gl" tabindex="0" data-m="dua: a heartfelt prayer">dua</span> for us</p>
+      <p>every flower carries your <span class="gl" tabindex="0" data-m="dua: a heartfelt prayer">dua</span> for us<br>plant one of each</p>
       <div class="picker" role="radiogroup" aria-label="Choose a flower">
         <button class="pick on" data-f="daisy" role="radio" aria-checked="true" aria-label="Daisy"><svg><use href="#daisy"/></svg></button>
         <button class="pick" data-f="tulip" role="radio" aria-checked="false" aria-label="Tulip"><svg><use href="#tulip"/></svg></button>
@@ -483,10 +487,10 @@ const CONTACTS = [
 ];
 
 /* ───── shared garden + RSVPs: paste keys here (empty = local-only, still works) ───── */
-const SUPABASE = null;   // e.g. { url: 'https://xxxx.supabase.co', key: 'publishable (anon) key' }
+const SUPABASE = { url: 'https://okljcyschpeawnbjbfdq.supabase.co', key: 'sb_publishable_eDeT4cmyoGmUspbkyVF0uw_JT4v5pWL' };   // publishable key: safe to be public
 
 const START = new Date('2027-01-31T11:30:00+05:30');
-const END   = new Date('2027-01-31T15:00:00+05:30');
+const END   = new Date('2027-01-31T12:30:00+05:30');   // calendar invites need an end; not shown on the page
 const VENUE = 'Palace Auditorium, Maranchery, Ponnani, Kerala';
 const TITLE = 'Wedding of Aysha Shaba & Muhammed Fuwad';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -567,18 +571,23 @@ addEventListener('resize', footProgress);
 footProgress();
 
 /* ───── digital garden: shared via Supabase when SUPABASE is set, otherwise this browser only ───── */
-const garden = $('#garden'), KEY = 'sf-garden', MAX = 80;
+// each guest plants up to three flowers, one of each kind
+const garden = $('#garden'), KEY = 'sf-garden', KINDS = ['daisy', 'tulip', 'sprig'];
 const SIZE = { daisy: [40, 64], tulip: [30, 64], sprig: [30, 70] };
 const SEED = [
   { f: 'sprig', x: 6, h: 84, r: -8 }, { f: 'daisy', x: 16, h: 70, r: 6 }, { f: 'tulip', x: 30, h: 92, r: -4 },
   { f: 'daisy', x: 70, h: 96, r: -6 }, { f: 'tulip', x: 82, h: 70, r: 8 }, { f: 'sprig', x: 93, h: 88, r: 10 },
 ];
 let planted = [];
-try { planted = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
-let pick = 'daisy', live = false, total = 0, lastBloom = 0, bloomsThisVisit = 0;
-// three rows for depth: front is full size, the back rows sit higher, smaller and fainter,
-// so a crowded garden looks lush instead of a white wall. Fresh blooms always go in front.
+try { planted = (JSON.parse(localStorage.getItem(KEY)) || []).filter((p, i, a) => KINDS.includes(p.f) && a.findIndex(o => o.f === p.f) === i); } catch {}
+// a random id for this browser, so the database also allows only one of each flower per guest
+let WHO = '';
+try { WHO = localStorage.getItem('sf-who') || crypto.randomUUID(); localStorage.setItem('sf-who', WHO); } catch { WHO = crypto.randomUUID?.() || ''; }
+let pick = 'daisy', live = false, total = 0;
+// three rows for depth: the newest flowers stand in front at full size, and as more guests plant,
+// older ones step back into rows that sit higher, smaller and fainter. Fresh blooms always go in front.
 const ROWS = [{ k: 1, b: 16, o: 1 }, { k: .78, b: 30, o: .7 }, { k: .6, b: 42, o: .45 }];
+const rowFor = age => age < 30 ? 0 : age < 70 ? 1 : 2;   // age = how many flowers are newer than this one
 const SWAY = 25, swaying = [];
 function grow(p, delay = 0, row = 0){
   const [w, h] = SIZE[p.f], R = ROWS[row], ht = Math.round(p.h * R.k), el = document.createElement('span');
@@ -591,20 +600,32 @@ function grow(p, delay = 0, row = 0){
   if (swaying.length > SWAY) swaying.shift().classList.add('still');
   return el;
 }
-// a steady pseudo-random row per flower, so the garden looks the same on every visit
-const rowOf = p => Math.round(p.x * 7 + p.h * 3) % 3;
+const used = () => new Set(planted.map(p => p.f));
+function choose(f){
+  pick = f;
+  document.querySelectorAll('.pick').forEach(o => { const on = o.dataset.f === f; o.classList.toggle('on', on); o.setAttribute('aria-checked', on); });
+  if (f) window.setCursorFlower?.(f);
+}
+function syncPicker(){
+  const u = used();
+  document.querySelectorAll('.pick').forEach(b => { const d = u.has(b.dataset.f); b.classList.toggle('done', d); b.disabled = d; });
+  if (!pick || u.has(pick)) choose(KINDS.find(f => !u.has(f)) || null);
+  garden.classList.toggle('full', u.size === KINDS.length);
+}
 function count(){
   const n = planted.length, s = k => k === 1 ? '' : 's';
+  const thanks = '<span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>';
+  const mine = n === KINDS.length ? `all three of yours are blooming, ${thanks}` : n ? `${n} of 3 from you, ${thanks}` : '';
   $('#gcount').innerHTML = live
-    ? `${total} flower${s(total)} blooming for Shaba & Fuwad${n ? ` · ${n} from you, <span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>` : ''}`
-    : n ? `${n} flower${s(n)} blooming from you, <span class="gl" tabindex="0" data-m="jazakAllah khair: may God reward you with goodness (a warm thank-you)">jazakAllah khair</span>` : 'pick a flower and tap the ground to make it bloom';
+    ? `${total} flower${s(total)} blooming for Shaba & Fuwad${mine ? ' · ' + mine : ''}`
+    : mine || 'pick a flower and tap the ground, you can plant one of each';
   $('#ghint').classList.toggle('off', n > 0);
 }
 const sb = (q, opt = {}) => fetch(`${SUPABASE.url}/rest/v1/${q}`, { ...opt, headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json', ...opt.headers } });
 async function connectGarden(){
   if (!SUPABASE) return;
   try {
-    const res = await sb('flowers?select=f,x,h,r&order=t.desc&limit=120', { headers: { Prefer: 'count=exact' } });
+    const res = await sb('flowers?select=f,x,h,r&order=t.desc&limit=150', { headers: { Prefer: 'count=exact' } });
     if (!res.ok) throw 0;
     const rows = await res.json();
     total = +(res.headers.get('Content-Range') || '').split('/')[1] || rows.length;
@@ -616,29 +637,25 @@ const gio = new IntersectionObserver(async ([en]) => {
   if (!en.isIntersecting) return;
   gio.disconnect();
   const shared = await connectGarden();
-  [...SEED, ...(shared || planted)].forEach((p, i) => grow(p, Math.min(i, 20) * .08, i < SEED.length ? 0 : rowOf(p)));
+  // oldest first, so the placeholder flowers are the first to step back once guests arrive
+  const all = [...SEED, ...(shared || planted)], N = all.length;
+  all.forEach((p, i) => grow(p, Math.min(i, 20) * .08, rowFor(N - 1 - i)));
   count();
 }, { threshold: .3 });
 gio.observe(garden);
-count();
-document.querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.pick').forEach(o => { o.classList.toggle('on', o === b); o.setAttribute('aria-checked', o === b); });
-  pick = b.dataset.f;
-  window.setCursorFlower?.(pick);
-}));
+syncPicker(); count();
+document.querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => !b.disabled && choose(b.dataset.f)));
 garden.addEventListener('click', e => {
-  const now = Date.now();
-  if (bloomsThisVisit >= 30) return toast('So many duas, thank you 🌼');
-  if (now - lastBloom < 1500) return toast('Let that bloom first, one at a time 🌼');
-  lastBloom = now; bloomsThisVisit++;
+  if (!pick) return toast('All three of yours are blooming, jazakAllah khair 🌼');
   const r = garden.getBoundingClientRect();
   const p = { f: pick, x: +(((e.clientX - r.left) / r.width) * 100).toFixed(1), h: 58 + Math.round(Math.random()*50), r: Math.round(Math.random()*20 - 10) };
   grow(p);
   planted.push(p);
-  if (planted.length > MAX) planted.shift();
   try { localStorage.setItem(KEY, JSON.stringify(planted)); } catch {}
-  if (live){ total++; sb('flowers', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(p) }).catch(() => {}); }
-  count();
+  if (live){ total++; sb('flowers', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ ...p, who: WHO }) }).catch(() => {}); }
+  syncPicker(); count();
+  const left = KINDS.length - planted.length;
+  toast(left ? `Blooming! ${left} more to plant 🌼` : 'All three planted, jazakAllah khair 🌼');
 });
 
 /* ───── start the hero once fonts are in, so the names write in their real lettering ───── */
